@@ -59,6 +59,7 @@ typedef struct Monitor_ {
 } Monitor;
 
 static CbList<Monitor> monitor_manager;
+static bool mode = false;
 
 static void OnMonitorClientEvent(int wParam,
                              int lParam,
@@ -145,7 +146,7 @@ static void RequestRunService(DBusMessage* msg, DBusConnection* conn,
 
     ServiceProvider* ic = CSTI<ServiceProvider>::getInstancePtr();
     if (ic->Count() > 0) {
-      ServiceInfo* info = ic->ChooseBestService();
+      ServiceInfo* info = ic->ChooseBestService(mode);
 
       service_client->DataSend(message, strlen(message) + 1,
                                            info->address, info->service_port);
@@ -189,7 +190,9 @@ static void RequestRunService(DBusMessage* msg, DBusConnection* conn,
 #endif  // defined(LINUX) && !defined(ANDROID)
 
 ClientRunner::ClientRunner(ClientRunnerParams& params)
-    : params_(params) {}
+    : params_(params) {
+  mode = params_.is_testmode;
+}
 
 ClientRunner::~ClientRunner() {}
 

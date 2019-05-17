@@ -42,26 +42,36 @@ int real_main(int argc, char** argv) {
     params.with_presence = params.presence_addr.length() > 0 &&
                            params.presence_port > 0;
     params.is_daemon = settings.GetAsBoolean("run", "run-as-damon", false);
+    params.is_testmode = settings.GetAsBoolean("run", "run-as-testmode", false);
   } else {
     DPRINT(COMM, DEBUG_ERROR, "ini parse error(%d)\n", ret);
     if (argc < 3) {
       DPRINT(COMM, DEBUG_ERROR, "Too Few Argument!!\n");
-      DPRINT(COMM, DEBUG_ERROR, "usage : %s mc_addr mc_port"
-             "<presence> <pr_addr> <pr_port> <daemon>\n", argv[0]);
+      DPRINT(COMM, DEBUG_ERROR, "usage : %s <mc_addr> <mc_port>"
+             "<daemon> <testmode> <presence> <pr_addr> <pr_port> \n", argv[0]);
       DPRINT(COMM, DEBUG_ERROR, "comment: mc(multicast),\n");
-      DPRINT(COMM, DEBUG_ERROR, "         presence (default is 0. This need to"
-             "come with pr_addr and pr_port once you use it)\n");
       DPRINT(COMM, DEBUG_ERROR, "         daemon (default is 0."
              "You can use it if you want\n");
+      DPRINT(COMM, DEBUG_ERROR, "         testmode (default is 0."
+             "You can use it if you want\n");
+      DPRINT(COMM, DEBUG_ERROR, "         presence (default is 0. This need to"
+             "come with pr_addr and pr_port once you use it)\n");
+      return 0;
     }
     params.multicast_addr = std::string(argv[1]);
     params.multicast_port = atoi(argv[2]);
-    params.is_daemon = (argc == 4 && (strncmp(argv[5], "daemon", 6) == 0)) ||
-                       (argc == 7 && (strncmp(argv[8], "daemon", 6) == 0));
-    params.with_presence = (argc >= 6 && (strncmp(argv[3], "presence", 8) == 0));
-    if (params.with_presence) {
-      params.presence_addr = std::string(argv[4]);
-      params.presence_port = atoi(argv[5]);
+    for (int index = 3 ; index < argc ; index++) {
+      if (strncmp(argv[index], "daemon", 6) == 0) {
+        params.is_daemon = true;
+      } else if (strncmp(argv[index], "testmode", 9) == 0) {
+        params.is_testmode = true;
+      } else if (strncmp(argv[index], "presence", 8) == 0) {
+        if (argc - index > 2) {
+          params.with_presence = true;
+          params.presence_addr = std::string(argv[index + 1]);
+          params.presence_port = atoi(argv[index + 2]);
+        }
+      }
     }
   }
 

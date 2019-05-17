@@ -25,6 +25,7 @@ class ClientRunner {
     std::string presence_addr;
     int presence_port;
     bool is_daemon;
+    bool is_testmode;
   };
 
   explicit ClientRunner(ClientRunnerParams& params);

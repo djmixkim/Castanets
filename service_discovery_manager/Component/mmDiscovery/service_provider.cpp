@@ -69,35 +69,38 @@ ServiceInfo* ServiceProvider::GetServiceInfo(int index) {
   return info;
 }
 
-ServiceInfo* ServiceProvider::ChooseBestService() {
-  INT32 best_index = -1;
+ServiceInfo* ServiceProvider::ChooseBestService(bool mode) {
+  INT32 best_index = 0;
   double best_score = 0;
 
   __OSAL_Mutex_Lock(&mutex_);
   int count = service_providers_.GetCount();
-  for (int i = 0; i < count; i++) {
-    ServiceInfo* info = service_providers_.GetAt(i);
 
-    // Score calculation for service decision
-    //  - page loading score = (network score + cpu score) / 2
-    //  - score = page loading score + rendering score
-    double score = (NetworkScore(info->monitor.bandwidth) +
-                    CpuScore(info->monitor.frequency,
-                             info->monitor.cpu_usage,
-                             info->monitor.cpu_cores)) / 2 +
-                    RenderingScore(info->monitor.rtt);
+  if (!mode) {
+    for (int i = 0; i < count; i++) {
+      ServiceInfo* info = service_providers_.GetAt(i);
 
-    if (i == 0) {
-      best_index = i;
-      best_score = score;
-    } else if (best_score > score) {
-      best_index = i;
-      best_score = score;
+      // Score calculation for service decision
+      //  - page loading score = (network score + cpu score) / 2
+      //  - score = page loading score + rendering score
+      double score = (NetworkScore(info->monitor.bandwidth) +
+                      CpuScore(info->monitor.frequency,
+                               info->monitor.cpu_usage,
+                               info->monitor.cpu_cores)) / 2 +
+                      RenderingScore(info->monitor.rtt);
+
+      if (i == 0) {
+        best_index = i;
+        best_score = score;
+      } else if (best_score > score) {
+        best_index = i;
+        best_score = score;
+      }
     }
   }
 
-  DPRINT(COMM, DEBUG_INFO, "ChooseBestService - index(%d) score(%d)\n",
-      best_index, best_score);
+  DPRINT(COMM, DEBUG_INFO, "ChooseBestService - mode(%d) index(%d) score(%d)\n",
+      mode, best_index, best_score);
   ServiceInfo* info = service_providers_.GetAt(best_index);
   __OSAL_Mutex_UnLock(&mutex_);
   return info;

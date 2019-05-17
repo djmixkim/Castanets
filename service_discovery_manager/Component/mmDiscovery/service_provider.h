@@ -39,7 +39,7 @@ public:
 
   VOID AddServiceInfo(CHAR* address, INT32 service_port, INT32 monitor_port);
   ServiceInfo* GetServiceInfo(INT32 index);
-  ServiceInfo* ChooseBestService();
+  ServiceInfo* ChooseBestService(bool mode);
   double NetworkScore(double bandwidth);
   double CpuScore(float frequency, float usages, int cores);
   double RenderingScore(double rtt);
